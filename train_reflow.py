@@ -73,9 +73,7 @@ def train(config: str):
     transform = Compose([ToTensor()])  # 变换成tensor + 变为[0, 1]
 
     print(f'Loading dataset from {img_root_path} and {noise_root_path}...')
-    dataset = ReflowDataset(img_root_path=img_root_path,
-                            noise_root_path=noise_root_path,
-                            transform=transform)
+    dataset = ReflowDataset(img_root_path=img_root_path, noise_root_path=noise_root_path, transform=transform)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     print(f'Dataset Loaded: {len(dataset)} samples')
@@ -161,8 +159,7 @@ def train(config: str):
                              optimizer=optimizer.state_dict(),
                              epoch=epoch,
                              loss_list=loss_list)
-            torch.save(save_dict,
-                       os.path.join(save_path, f'miniunet_{epoch}.pth'))
+            torch.save(save_dict, os.path.join(save_path, f'miniunet_{epoch}.pth'))
 
 
 if __name__ == '__main__':

@@ -7,21 +7,11 @@ class DownLayer(nn.Module):
     """MiniUnet的下采样层 Resnet
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 time_emb_dim=16,
-                 downsample=False):
+    def __init__(self, in_channels, out_channels, time_emb_dim=16, downsample=False):
         super(DownLayer, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
-        self.conv2 = nn.Conv2d(out_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
@@ -68,21 +58,11 @@ class UpLayer(nn.Module):
     """MiniUnet的上采样层
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 time_emb_dim=16,
-                 upsample=False):
+    def __init__(self, in_channels, out_channels, time_emb_dim=16, upsample=False):
         super(UpLayer, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
-        self.conv2 = nn.Conv2d(out_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
@@ -128,14 +108,8 @@ class MiddleLayer(nn.Module):
     def __init__(self, in_channels, out_channels, time_emb_dim=16):
         super(MiddleLayer, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
-        self.conv2 = nn.Conv2d(out_channels,
-                               out_channels,
-                               kernel_size=3,
-                               padding=1)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
@@ -184,30 +158,18 @@ class MiniUnet(nn.Module):
 
         # 多个Layer构成block
         self.down1 = nn.ModuleList([
-            DownLayer(base_channels,
-                      base_channels * 2,
-                      time_emb_dim=self.time_emb_dim,
-                      downsample=False),
-            DownLayer(base_channels * 2,
-                      base_channels * 2,
-                      time_emb_dim=self.time_emb_dim)
+            DownLayer(base_channels, base_channels * 2, time_emb_dim=self.time_emb_dim, downsample=False),
+            DownLayer(base_channels * 2, base_channels * 2, time_emb_dim=self.time_emb_dim)
         ])
         self.maxpool1 = nn.MaxPool2d(2)
 
         self.down2 = nn.ModuleList([
-            DownLayer(base_channels * 2,
-                      base_channels * 4,
-                      time_emb_dim=self.time_emb_dim,
-                      downsample=False),
-            DownLayer(base_channels * 4,
-                      base_channels * 4,
-                      time_emb_dim=self.time_emb_dim)
+            DownLayer(base_channels * 2, base_channels * 4, time_emb_dim=self.time_emb_dim, downsample=False),
+            DownLayer(base_channels * 4, base_channels * 4, time_emb_dim=self.time_emb_dim)
         ])
         self.maxpool2 = nn.MaxPool2d(2)
 
-        self.middle = MiddleLayer(base_channels * 4,
-                                  base_channels * 4,
-                                  time_emb_dim=self.time_emb_dim)
+        self.middle = MiddleLayer(base_channels * 4, base_channels * 4, time_emb_dim=self.time_emb_dim)
 
         self.upsample1 = nn.Upsample(scale_factor=2)
         self.up1 = nn.ModuleList([
@@ -216,19 +178,12 @@ class MiniUnet(nn.Module):
                 base_channels * 2,
                 time_emb_dim=self.time_emb_dim,
                 upsample=False),
-            UpLayer(base_channels * 2,
-                    base_channels * 2,
-                    time_emb_dim=self.time_emb_dim)
+            UpLayer(base_channels * 2, base_channels * 2, time_emb_dim=self.time_emb_dim)
         ])
         self.upsample2 = nn.Upsample(scale_factor=2)
         self.up2 = nn.ModuleList([
-            UpLayer(base_channels * 4,
-                    base_channels,
-                    time_emb_dim=self.time_emb_dim,
-                    upsample=False),
-            UpLayer(base_channels,
-                    base_channels,
-                    time_emb_dim=self.time_emb_dim)
+            UpLayer(base_channels * 4, base_channels, time_emb_dim=self.time_emb_dim, upsample=False),
+            UpLayer(base_channels, base_channels, time_emb_dim=self.time_emb_dim)
         ])
 
         self.conv_out = nn.Conv2d(base_channels, 1, kernel_size=1, padding=0)
@@ -295,7 +250,7 @@ class MiniUnet(nn.Module):
         # x:(B, C, H, W)
         # 时间编码加上
         x = self.conv_in(x)
-        # 时间编码
+        # 时间编码, [B, C], 对每个channel的特征图都加上一个对应的时间编码标量
         temb = self.time_emb(t, self.base_channels)
         # 这里注意，我们把temb和labelemb加起来，作为一个整体的temb输入到MiniUnet中，让模型进行感知！二者编码维度一样，可以直接相加！就把label的条件信息融入进去了！
         if y is not None:

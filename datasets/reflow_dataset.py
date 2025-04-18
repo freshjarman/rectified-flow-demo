@@ -18,10 +18,7 @@ class ReflowDataset(Dataset):
         transform (optional): 图像transform. Defaults to None.
     """
 
-    def __init__(self,
-                 img_root_path: str,
-                 noise_root_path: str,
-                 transform: Optional[Any] = None):
+    def __init__(self, img_root_path: str, noise_root_path: str, transform: Optional[Any] = None):
         # 通过根路径获得所有图片的路径
         self.img_path = []
         self.noise_path = []
@@ -33,8 +30,7 @@ class ReflowDataset(Dataset):
             for img_name in os.listdir(img_path):
                 self.labels.append(int(label))
                 self.img_path.append(os.path.join(img_path, img_name))
-                self.noise_path.append(
-                    os.path.join(noise_path, img_name.replace('.png', '.npy')))
+                self.noise_path.append(os.path.join(noise_path, img_name.replace('.png', '.npy')))
 
         self.transform = transform
 
@@ -64,8 +60,7 @@ class ReflowDataset(Dataset):
 
 if __name__ == '__main__':
     transform = ToTensor()
-    dataset = ReflowDataset('./data/reflow_img', './data/reflow_noise',
-                            transform)
+    dataset = ReflowDataset('./data/reflow_img', './data/reflow_noise', transform)
     img, noise, label = dataset[100]
     print(len(dataset))
     print(img.shape, noise.shape, label)
